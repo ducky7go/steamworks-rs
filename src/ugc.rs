@@ -1770,7 +1770,8 @@ impl<'a> QueryResults<'a> {
     ) -> Option<(String, String, sys::EItemPreviewType)> {
         let mut url_or_video_id = [0 as c_char; 4096];
         let mut original_filename = [0 as c_char; 4096];
-        let mut preview_type: sys::EItemPreviewType = sys::EItemPreviewType::k_EItemPreviewType_Image;
+        let mut preview_type: sys::EItemPreviewType =
+            sys::EItemPreviewType::k_EItemPreviewType_Image;
 
         let ok = unsafe {
             sys::SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview(
