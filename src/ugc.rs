@@ -1745,6 +1745,63 @@ impl<'a> QueryResults<'a> {
             None
         }
     }
+
+    /// Returns the number of additional previews for the item at the specified index.
+    ///
+    /// You must call `include_additional_previews(true)` or `set_return_additional_previews(true)`
+    /// before fetching the query for this to work.
+    pub fn num_additional_previews(&self, index: u32) -> u32 {
+        unsafe {
+            sys::SteamAPI_ISteamUGC_GetQueryUGCNumAdditionalPreviews(self.ugc, self.handle, index)
+        }
+    }
+
+    /// Gets additional preview data for the item at the specified index.
+    ///
+    /// Returns a tuple of (url_or_video_id, original_filename, preview_type).
+    /// Returns None if the preview index is invalid.
+    ///
+    /// You must call `include_additional_previews(true)` or `set_return_additional_previews(true)`
+    /// before fetching the query for this to work.
+    pub fn get_additional_preview(
+        &self,
+        index: u32,
+        preview_index: u32,
+    ) -> Option<(String, String, sys::EItemPreviewType)> {
+        let mut url_or_video_id = [0 as c_char; 4096];
+        let mut original_filename = [0 as c_char; 4096];
+        let mut preview_type: sys::EItemPreviewType = sys::EItemPreviewType::k_EItemPreviewType_Image;
+
+        let ok = unsafe {
+            sys::SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview(
+                self.ugc,
+                self.handle,
+                index,
+                preview_index,
+                url_or_video_id.as_mut_ptr(),
+                url_or_video_id.len() as _,
+                original_filename.as_mut_ptr(),
+                original_filename.len() as _,
+                &mut preview_type as *mut _,
+            )
+        };
+
+        if ok {
+            Some(unsafe {
+                (
+                    CStr::from_ptr(url_or_video_id.as_ptr())
+                        .to_string_lossy()
+                        .into_owned(),
+                    CStr::from_ptr(original_filename.as_ptr())
+                        .to_string_lossy()
+                        .into_owned(),
+                    preview_type,
+                )
+            })
+        } else {
+            None
+        }
+    }
 }
 
 /// Query result
