@@ -989,6 +989,19 @@ impl UpdateHandle {
         self
     }
 
+    #[must_use]
+    pub fn language(self, language: &str) -> Self {
+        unsafe {
+            let language = CString::new(language).unwrap();
+            assert!(sys::SteamAPI_ISteamUGC_SetItemUpdateLanguage(
+                self.ugc,
+                self.handle,
+                language.as_ptr()
+            ));
+        }
+        self
+    }
+
     pub fn submit<F>(self, change_note: Option<&str>, cb: F) -> UpdateWatchHandle
     where
         F: FnOnce(Result<(PublishedFileId, bool), SteamError>) + 'static + Send,
